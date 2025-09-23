@@ -770,79 +770,82 @@
                 </div>
             </div>
 
-            <!-- Create Kolam Tab with Background Upload -->
+           <!-- Create Kolam Tab with Background Upload -->
             <div class="tab-content" id="create">
-                <div class="creation-section">
-                    <div class="creation-controls">
-                        <h3>Create Your Kolam</h3>
-                        
-                        <!-- Background Image Upload Section -->
-                        <div class="background-upload-section">
-                            <h4>Background Image (Optional)</h4>
-                            <div id="backgroundUploadArea" class="background-upload-area">
-                                <div class="upload-icon">📷</div>
-                                <p>Click or drag to upload background image</p>
-                                <small>Use as reference for drawing kolam patterns</small>
-                            </div>
-                            <input type="file" id="backgroundFileInput" accept="image/*" style="display: none;">
-                            
-                            <!-- Background Controls -->
-                            <div id="backgroundControls" class="background-controls" style="display: none;">
-                                <div class="control-group">
-                                    <label for="backgroundOpacity">Background Opacity:</label>
-                                    <input type="range" id="backgroundOpacity" min="0.1" max="1" step="0.1" value="0.5">
-                                </div>
-                                <div class="control-buttons">
-                                    <button id="toggleBackgroundBtn" class="btn-secondary">Hide Background</button>
-                                    <button id="removeBackgroundBtn" class="btn-danger">Remove Background</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="control-group">
-                            <label>Grid Size:</label>
-                            <select id="gridSize">
-                                <option value="5">5×5</option>
-                                <option value="8" selected>8×8</option>
-                                <option value="10">10×10</option>
-                                <option value="12">12×12</option>
-                            </select>
-                        </div>
-                        
-                        <div class="control-group">
-                            <label>Pattern Type:</label>
-                            <select id="patternType">
-                                <option value="basic">Basic Lines</option>
-                                <option value="loops">Loops & Curves</option>
-                                <option value="geometric">Geometric Shapes</option>
-                                <option value="floral">Floral Motifs</option>
-                            </select>
-                        </div>
-                        
-                        <div class="control-group">
-                            <label>Symmetry:</label>
-                            <div class="symmetry-options">
-                                <button class="symmetry-btn active" data-symmetry="none">None</button>
-                                <button class="symmetry-btn" data-symmetry="2-fold">2-fold</button>
-                                <button class="symmetry-btn" data-symmetry="4-fold">4-fold</button>
-                                <button class="symmetry-btn" data-symmetry="8-fold">8-fold</button>
-                            </div>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn-primary" id="generateBtn">✨ Generate Kolam</button>
-                            <button class="btn-secondary" id="clearCanvasBtn">🗑️ Clear</button>
-                            <button class="btn-secondary" id="saveBtn">💾 Save Design</button>
-                        </div>
-                    </div>
-                    
-                    <div class="canvas-section">
-                        <canvas id="kolamCanvas" width="500" height="500"></canvas>
-                        <div class="canvas-info">
-                            <p>Click and drag to draw. The algorithm will maintain symmetry based on your selection.</p>
-                        </div>
+            <div class="creation-table">
+
+                <!-- Column 1: Toolbar -->
+                <div class="table-column toolbar-column">
+                <h3>Create Your Kolam</h3>
+
+                <div class="control-group">
+                    <label>Grid Size:</label>
+                    <select id="gridSize">
+                    <option value="5">5×5</option>
+                    <option value="8" selected>8×8</option>
+                    <option value="10">10×10</option>
+                    <option value="12">12×12</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Pattern Type:</label>
+                    <select id="patternType">
+                    <option value="basic">Basic Lines</option>
+                    <option value="loops">Loops & Curves</option>
+                    <option value="geometric">Geometric Shapes</option>
+                    <option value="floral">Floral Motifs</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Symmetry:</label>
+                    <div class="symmetry-options">
+                    <button class="symmetry-btn active" data-symmetry="none">None</button>
+                    <button class="symmetry-btn" data-symmetry="2-fold">2-fold</button>
+                    <button class="symmetry-btn" data-symmetry="4-fold">4-fold</button>
+                    <button class="symmetry-btn" data-symmetry="8-fold">8-fold</button>
                     </div>
                 </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" id="generateBtn">✨ Generate Kolam</button>
+                    <button class="btn-secondary" id="clearCanvasBtn">🗑️ Clear</button>
+                    <button class="btn-secondary" id="saveBtn">💾 Save Design</button>
+                </div>
+                </div>
+
+                <!-- Column 2: Canvas -->
+                <div class="table-column canvas-column">
+                <canvas id="kolamCanvas" width="500" height="500"></canvas>
+                <div class="canvas-info">
+                    <p>Click and drag to draw. The algorithm will maintain symmetry based on your selection.</p>
+                </div>
+                </div>
+
+                <!-- Column 3: Background Upload -->
+                <div class="table-column background-column">
+                <h4>Background Image (Optional)</h4>
+                <div id="backgroundUploadArea" class="background-upload-area">
+                    <div class="upload-icon">📷</div>
+                    <p>Click or drag to upload background image</p>
+                    <small>Use as reference for drawing kolam patterns</small>
+                </div>
+                <input type="file" id="backgroundFileInput" accept="image/*" style="display: none;">
+
+                <div id="backgroundControls" class="background-controls" style="display: none;">
+                    <div class="control-group">
+                    <label for="backgroundOpacity">Background Opacity:</label>
+                    <input type="range" id="backgroundOpacity" min="0.1" max="1" step="0.1" value="0.5">
+                    </div>
+                    <div class="control-buttons">
+                    <button id="toggleBackgroundBtn" class="btn-secondary">Hide Background</button>
+                    <button id="removeBackgroundBtn" class="btn-danger">Remove Background</button>
+                    </div>
+                </div>
+                </div>
+
+            </div>
             </div>
 
             <!-- Pattern Gallery Tab -->
