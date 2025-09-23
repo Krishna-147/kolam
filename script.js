@@ -1,5 +1,4 @@
-
-// Kolam Design Analyzer - JavaScript
+// Kolam Design Analyzer - JavaScript (Enhanced with Background Image Feature)
 class KolamAnalyzer {
     constructor() {
         this.currentTab = 'upload';
@@ -12,6 +11,12 @@ class KolamAnalyzer {
         this.gridSize = 8;
         this.symmetryType = 'none';
         
+        // NEW: Background image properties
+        this.backgroundImage = null;
+        this.backgroundImageData = null;
+        this.showBackground = false;
+        this.backgroundOpacity = 0.5;
+        
         this.init();
     }
 
@@ -21,6 +26,7 @@ class KolamAnalyzer {
         this.renderGalleryPatterns();
         this.renderPrincipleVisuals();
         this.setupFileUpload();
+        this.setupBackgroundImageUpload(); // NEW: Setup background image upload
     }
 
     setupEventListeners() {
@@ -53,6 +59,14 @@ class KolamAnalyzer {
         document.getElementById('generateBtn')?.addEventListener('click', () => this.generateKolam());
         document.getElementById('clearCanvasBtn')?.addEventListener('click', () => this.clearCanvas());
         document.getElementById('saveBtn')?.addEventListener('click', () => this.saveDesign());
+
+        // NEW: Background image controls
+        document.getElementById('toggleBackgroundBtn')?.addEventListener('click', () => this.toggleBackground());
+        document.getElementById('backgroundOpacity')?.addEventListener('input', (e) => {
+            this.backgroundOpacity = parseFloat(e.target.value);
+            this.redrawCanvas();
+        });
+        document.getElementById('removeBackgroundBtn')?.addEventListener('click', () => this.removeBackground());
 
         // Gallery filters
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -99,6 +113,109 @@ class KolamAnalyzer {
                 this.handleFileUpload(e.dataTransfer.files[0]);
             }
         });
+    }
+
+    // NEW: Setup background image upload for Create section
+    setupBackgroundImageUpload() {
+        const bgFileInput = document.getElementById('backgroundFileInput');
+        const bgUploadArea = document.getElementById('backgroundUploadArea');
+        
+        // File input change
+        bgFileInput?.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                this.handleBackgroundImageUpload(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop for background upload area
+        bgUploadArea?.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            bgUploadArea.classList.add('dragover');
+        });
+
+        bgUploadArea?.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            bgUploadArea.classList.remove('dragover');
+        });
+
+        bgUploadArea?.addEventListener('drop', (e) => {
+            e.preventDefault();
+            bgUploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files[0]) {
+                this.handleBackgroundImageUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Click to upload
+        bgUploadArea?.addEventListener('click', () => {
+            bgFileInput?.click();
+        });
+    }
+
+    // NEW: Handle background image upload
+    handleBackgroundImageUpload(file) {
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                this.backgroundImageData = e.target.result;
+                this.backgroundImage = img;
+                this.showBackground = true;
+                this.updateBackgroundControls();
+                this.redrawCanvas();
+                
+                // Show success message
+                const bgUploadArea = document.getElementById('backgroundUploadArea');
+                if (bgUploadArea) {
+                    const originalText = bgUploadArea.innerHTML;
+                    bgUploadArea.innerHTML = '<div class="upload-success">✓ Background image loaded!</div>';
+                    setTimeout(() => {
+                        bgUploadArea.innerHTML = originalText;
+                    }, 2000);
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // NEW: Update background control visibility
+    updateBackgroundControls() {
+        const controls = document.getElementById('backgroundControls');
+        if (controls) {
+            controls.style.display = this.backgroundImage ? 'block' : 'none';
+        }
+    }
+
+    // NEW: Toggle background visibility
+    toggleBackground() {
+        this.showBackground = !this.showBackground;
+        const btn = document.getElementById('toggleBackgroundBtn');
+        if (btn) {
+            btn.textContent = this.showBackground ? 'Hide Background' : 'Show Background';
+        }
+        this.redrawCanvas();
+    }
+
+    // NEW: Remove background image
+    removeBackground() {
+        this.backgroundImage = null;
+        this.backgroundImageData = null;
+        this.showBackground = false;
+        this.updateBackgroundControls();
+        this.redrawCanvas();
+        
+        // Reset file input
+        const bgFileInput = document.getElementById('backgroundFileInput');
+        if (bgFileInput) {
+            bgFileInput.value = '';
+        }
     }
 
     setupCanvas() {
@@ -363,11 +480,17 @@ class KolamAnalyzer {
         overlay.appendChild(svg);
     }
 
+    // MODIFIED: Enhanced redrawCanvas method with background image support
     redrawCanvas() {
         if (!this.canvas || !this.ctx) return;
 
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // NEW: Draw background image if present and enabled
+        if (this.backgroundImage && this.showBackground) {
+            this.drawBackgroundImage();
+        }
         
         // Draw grid
         this.drawGrid();
@@ -376,6 +499,37 @@ class KolamAnalyzer {
         this.allPaths.forEach(path => {
             this.drawPath(path);
         });
+    }
+
+    // NEW: Draw background image on canvas
+    drawBackgroundImage() {
+        if (!this.backgroundImage) return;
+        
+        this.ctx.save();
+        this.ctx.globalAlpha = this.backgroundOpacity;
+        
+        // Calculate scaling to fit canvas while maintaining aspect ratio
+        const canvasRatio = this.canvas.width / this.canvas.height;
+        const imageRatio = this.backgroundImage.width / this.backgroundImage.height;
+        
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (canvasRatio > imageRatio) {
+            // Canvas is wider than image - fit by height
+            drawHeight = this.canvas.height;
+            drawWidth = drawHeight * imageRatio;
+            drawX = (this.canvas.width - drawWidth) / 2;
+            drawY = 0;
+        } else {
+            // Canvas is taller than image - fit by width
+            drawWidth = this.canvas.width;
+            drawHeight = drawWidth / imageRatio;
+            drawX = 0;
+            drawY = (this.canvas.height - drawHeight) / 2;
+        }
+        
+        this.ctx.drawImage(this.backgroundImage, drawX, drawY, drawWidth, drawHeight);
+        this.ctx.restore();
     }
 
     drawGrid() {
@@ -626,6 +780,7 @@ class KolamAnalyzer {
         this.redrawCanvas();
     }
 
+    // MODIFIED: Clear canvas now preserves background image
     clearCanvas() {
         this.allPaths = [];
         this.redrawCanvas();
@@ -1344,7 +1499,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let textToSpeak = '';
         let speechSynthesisUtterance = null;
 
-        readAloudBtn.addEventListener('click', () => {
+        readAloudBtn?.addEventListener('click', () => {
             if (speechSynthesisUtterance && speechSynthesis.speaking) {
                 speechSynthesis.cancel();
             }
@@ -1356,7 +1511,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pauseReadingBtn.style.display = 'inline-block';
         });
 
-        pauseReadingBtn.addEventListener('click', () => {
+        pauseReadingBtn?.addEventListener('click', () => {
             if (speechSynthesis.speaking) {
                 speechSynthesis.pause();
                 pauseReadingBtn.style.display = 'none';
@@ -1364,7 +1519,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        playSessionBtn.addEventListener('click', () => {
+        playSessionBtn?.addEventListener('click', () => {
             if (speechSynthesis.paused) {
                 speechSynthesis.resume();
                 playSessionBtn.style.display = 'none';
@@ -1372,17 +1527,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        highContrastBtn.addEventListener('click', () => {
+        highContrastBtn?.addEventListener('click', () => {
             document.body.classList.toggle('high-contrast');
         });
 
         let currentFontSize = 1;
-        increaseFontBtn.addEventListener('click', () => {
+        increaseFontBtn?.addEventListener('click', () => {
             currentFontSize += 0.1;
             document.body.style.fontSize = `${currentFontSize}rem`;
         });
 
-        decreaseFontBtn.addEventListener('click', () => {
+        decreaseFontBtn?.addEventListener('click', () => {
             currentFontSize = Math.max(0.8, currentFontSize - 0.1);
             document.body.style.fontSize = `${currentFontSize}rem`;
         });
@@ -1407,23 +1562,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Therapeutic kolam generation logic
-        generateTherapeuticBtn.addEventListener('click', () => {
+        generateTherapeuticBtn?.addEventListener('click', () => {
             const selectedMood = document.querySelector('.mood-btn.selected')?.dataset.mood || 'neutral';
             const selectedGoals = Array.from(document.querySelectorAll('.goal-option input:checked')).map(cb => cb.value);
-            const duration = document.getElementById('sessionDuration').value;
-            const difficulty = document.getElementById('difficultyLevel').value;
-            const guidance = document.getElementById('guidanceLevel').value;
+            const duration = document.getElementById('sessionDuration')?.value;
+            const difficulty = document.getElementById('difficultyLevel')?.value;
+            const guidance = document.getElementById('guidanceLevel')?.value;
 
             // Show workspace and hide controls
-            therapeuticControls.style.display = 'none';
-            therapeuticWorkspace.style.display = 'block';
-            sessionComplete.style.display = 'none';
+            if (therapeuticControls) therapeuticControls.style.display = 'none';
+            if (therapeuticWorkspace) therapeuticWorkspace.style.display = 'block';
+            if (sessionComplete) sessionComplete.style.display = 'none';
 
             // Update session stats
-            document.getElementById('currentMood').textContent = selectedMood;
+            const currentMoodEl = document.getElementById('currentMood');
+            if (currentMoodEl) currentMoodEl.textContent = selectedMood;
             timeRemaining = parseInt(duration) * 60;
-            document.getElementById('sessionTimer').textContent = formatTime(timeRemaining);
-            document.getElementById('sessionProgress').textContent = '0%';
+            const sessionTimerEl = document.getElementById('sessionTimer');
+            if (sessionTimerEl) sessionTimerEl.textContent = formatTime(timeRemaining);
+            const sessionProgressEl = document.getElementById('sessionProgress');
+            if (sessionProgressEl) sessionProgressEl.textContent = '0%';
 
             // Generate the kolam based on selections
             generateKolamPattern(selectedMood, selectedGoals, difficulty, therapeuticCanvas);
@@ -1434,6 +1592,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function generateKolamPattern(mood, goals, difficulty, canvas) {
+            if (!canvas) return;
+            
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
@@ -1475,9 +1635,12 @@ document.addEventListener('DOMContentLoaded', () => {
         function startSessionTimer() {
             sessionTimer = setInterval(() => {
                 timeRemaining--;
-                document.getElementById('sessionTimer').textContent = formatTime(timeRemaining);
-                const progress = ((parseInt(document.getElementById('sessionDuration').value) * 60 - timeRemaining) / (parseInt(document.getElementById('sessionDuration').value) * 60)) * 100;
-                document.getElementById('sessionProgress').textContent = `${Math.floor(progress)}%`;
+                const sessionTimerEl = document.getElementById('sessionTimer');
+                if (sessionTimerEl) sessionTimerEl.textContent = formatTime(timeRemaining);
+                const sessionDurationEl = document.getElementById('sessionDuration');
+                const progress = ((parseInt(sessionDurationEl?.value || 0) * 60 - timeRemaining) / (parseInt(sessionDurationEl?.value || 0) * 60)) * 100;
+                const sessionProgressEl = document.getElementById('sessionProgress');
+                if (sessionProgressEl) sessionProgressEl.textContent = `${Math.floor(progress)}%`;
 
                 if (timeRemaining <= 0) {
                     endSession();
